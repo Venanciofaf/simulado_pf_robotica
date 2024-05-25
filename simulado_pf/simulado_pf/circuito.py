@@ -44,6 +44,7 @@ class Circuito(Node , Odom , Laser): # Mude o nome da classe
         self.kp_ang3 = 0.001
         self.kp_ang2 = 0.5
         self.kp_linear = 0.1
+        self.kp47 = 0.25
         self.comecou = False
         self.volta = False
         self.inicio = self.get_clock().now().to_msg().sec
@@ -174,22 +175,23 @@ class Circuito(Node , Odom , Laser): # Mude o nome da classe
             
             print('A distância é: ' , dist)
             print('A diferença de tempo é: ' , self.now - self.inicio)
-            if dist < 0.05 and self.now - self.inicio > 30:
+            if dist < 0.1 and self.now - self.inicio > 30:
                 self.twist.linear.x = 0.
                 self.twist.angular.z = 0.
                 self.robot_state = 'girar'
-                self.goal_yaw = (self.yaw_2pi + (np.pi/2)) % (2 * np.pi) 
+                self.goal_yaw = (self.yaw_2pi + (np.pi/2)) % (2 * np.pi)  
 
     def giro(self):
         
         
         erro_ang = self.goal_yaw - self.yaw_2pi
+        erro_ang = np.arctan2(np.sin(erro_ang), np.cos(erro_ang))
         self.twist.angular.z = erro_ang * self.kp_ang2
         
         print('O goal yaw é :  ' , self.goal_yaw)
         print('O erro angular é: ' , erro_ang % (2*np.pi))
         
-        if abs(erro_ang)  < 0.07:
+        if abs(erro_ang) < np.deg2rad(1):
             if not(self.volta):
                 self.robot_state = 'centraliza'
             else:
@@ -225,7 +227,7 @@ class Circuito(Node , Odom , Laser): # Mude o nome da classe
     def goto(self):
         self.get_angular_erro(self.point)
         
-        self.twist.angular.z = self.kp_linear * self.erro
+        self.twist.angular.z = self.kp47 * self.erro
         self.twist.linear.x = self.kp_linear * self.dist
         if self.dist < 0.05:
             self.robot_state = 'stop'
@@ -245,7 +247,7 @@ class Circuito(Node , Odom , Laser): # Mude o nome da classe
         self.cmd_vel_pub.publish(self.twist)
 def main(args=None):
     rclpy.init(args=args)
-    ros_node = Circuito('azul') # Mude o nome da classe
+    ros_node = Circuito('verde') # Mude o nome da classe
 
     rclpy.spin(ros_node)
 

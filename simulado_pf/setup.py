@@ -21,7 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'circuito = simulado_pf.circuito:main',
-            'aleatorio = simulado_pf.aleatorio:main'
+            'aleatorio = simulado_pf.aleatorio:main',
+            'seguidores = simulado_pf.seguidores:main',
         ],
     },
 )
